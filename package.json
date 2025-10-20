@@ -37,7 +37,10 @@
   "module": "./dist/index.es.js",
   "browser": "./dist/index.es.js",
   "dependencies": {
-    "@noble/hashes": "^2.0.1"
+    "@noble/hashes": "^2.0.1",
+    "@react-rxjs/core": "^0.10.8",
+    "@react-rxjs/utils": "^0.9.7",
+    "rxjs": "^7.8.2"
   },
   "peerDependencies": {
     "react": "^19.0.0",
@@ -53,6 +56,7 @@
     "eslint-plugin-react-hooks": "^7.0.0",
     "eslint-plugin-react-refresh": "^0.4.23",
     "globals": "^16.4.0",
+    "polkadot-api": "^1.20.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.1",
     "vite": "^7.1.9",
