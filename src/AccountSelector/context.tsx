@@ -4,7 +4,7 @@ import {
   Subscribe,
   useStateObservable,
 } from "@react-rxjs/core";
-import { SS58String } from "polkadot-api";
+import type { SS58String } from "polkadot-api";
 import {
   createContext,
   FC,
@@ -15,7 +15,7 @@ import {
   useId,
 } from "react";
 import { firstValueFrom, withLatestFrom } from "rxjs";
-import { Plugin } from "./plugin";
+import { Plugin } from "./plugins";
 import {
   Account,
   plugins$,

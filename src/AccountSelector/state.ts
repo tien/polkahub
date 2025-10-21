@@ -1,6 +1,6 @@
 import { state } from "@react-rxjs/core";
 import { combineKeys, createKeyedSignal } from "@react-rxjs/utils";
-import { PolkadotSigner, SS58String } from "polkadot-api";
+import type { PolkadotSigner, SS58String } from "polkadot-api";
 import {
   concat,
   endWith,
@@ -11,7 +11,7 @@ import {
   switchMap,
   takeUntil,
 } from "rxjs";
-import { Plugin } from "./plugin";
+import type { Plugin } from "./plugins";
 
 export interface Account {
   provider: string;
