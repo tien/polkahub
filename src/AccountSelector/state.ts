@@ -74,6 +74,7 @@ const deselectWhenRemoved$ = (value: Account, plugin: Plugin) =>
   concat([value], NEVER).pipe(
     takeUntil(
       plugin.accounts$.pipe(
+        map((accounts) => Object.values(accounts).flat()),
         filter((accounts) => accounts.every((acc) => !plugin.eq(acc, value)))
       )
     ),

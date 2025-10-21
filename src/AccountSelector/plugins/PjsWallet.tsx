@@ -9,7 +9,7 @@ import {
   state,
   StateObservable,
 } from "@react-rxjs/core";
-import { combineKeys, createSignal, MapWithChanges } from "@react-rxjs/utils";
+import { combineKeys, MapWithChanges } from "@react-rxjs/utils";
 import {
   catchError,
   concat,
@@ -30,6 +30,11 @@ import {
   timer,
 } from "rxjs";
 import { Account } from "../state";
+import {
+  localStorageProvider,
+  persistedState,
+  PersistenceProvider,
+} from "./persist";
 import { Plugin } from "./plugin";
 
 export interface PjsWalletAccount extends Account {
@@ -56,23 +61,11 @@ export interface PjsWalletPlugin extends Plugin<PjsWalletAccount> {
 
 export const pjsWallet = (
   opts: Partial<{
-    persist: {
-      save: (value: string | null) => void;
-      load: () => string | null;
-    };
+    persist: PersistenceProvider;
   }>
 ): PjsWalletPlugin => {
   const { persist } = {
-    persist: {
-      save: (value: string | null) => {
-        if (value) {
-          localStorage.setItem("pjs-wallet-plugin", value);
-        } else {
-          localStorage.removeItem("pjs-wallet-plugin");
-        }
-      },
-      load: () => localStorage.getItem("pjs-wallet-plugin"),
-    },
+    persist: localStorageProvider("pjs-wallet-plugin"),
     ...opts,
   };
 
@@ -88,24 +81,9 @@ export const pjsWallet = (
     []
   );
 
-  const [connectedExtensionsChange$, setConnectedExtensions] =
-    createSignal<string[]>();
-  connectedExtensionsChange$.subscribe((v) => persist.save(JSON.stringify(v)));
-
-  const connectedExtensions$ = state(
-    () => connectedExtensionsChange$.pipe(map((v) => (v === null ? [] : v))),
-    () => {
-      const initialValueStr = persist.load();
-      try {
-        return initialValueStr != null
-          ? (JSON.parse(initialValueStr) as string[]) ?? []
-          : [];
-      } catch (ex) {
-        console.error(ex);
-        return [];
-      }
-    }
-  )();
+  const [connectedExtensions$, setConnectedExtensions] = persistedState<
+    string[]
+  >(persist, []);
 
   const extension$ = state((name: string) => {
     const connect$ = availableExtensions$.pipe(
@@ -229,7 +207,7 @@ export const pjsWallet = (
           )
         )
       ),
-    eq: (a, b) => a.injectedAccount === b.injectedAccount,
+    eq: (a, b) => a.address === b.address && a.extensionId === b.extensionId,
     accounts$,
     availableExtensions$,
     connectedExtensions$,
