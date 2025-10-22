@@ -38,6 +38,7 @@
   "browser": "./dist/index.es.js",
   "dependencies": {
     "@noble/hashes": "^2.0.1",
+    "@polkadot-api/meta-signers": "^0.1.16",
     "@polkadot-api/pjs-signer": "^0.6.16",
     "@polkadot-api/signers-common": "^0.1.17",
     "@polkadot-api/substrate-bindings": "^0.16.4",

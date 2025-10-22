@@ -12,6 +12,7 @@ import {
 } from "react";
 import { Plugin } from "./plugins";
 import { Account, setPlugins, subscription$ } from "./state";
+import { EMPTY, merge } from "rxjs";
 
 export const ModalContext = createContext<{
   setContent: (element: ReactElement | null) => void;
@@ -92,7 +93,10 @@ const InnerAccountSelectorProvider: FC<
   }, [id]);
 
   useEffect(() => {
+    const sub = merge(plugins.map((p) => p.subscription$ ?? EMPTY)).subscribe();
     setPlugins(id, plugins);
+
+    return () => sub.unsubscribe();
   }, [id, plugins]);
 
   return (

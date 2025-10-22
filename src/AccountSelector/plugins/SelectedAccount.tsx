@@ -95,6 +95,9 @@ export const selectedAccountPlugin = (
     id: "selected-account",
     deserialize: () => null,
     accounts$: of({}),
+    receivePlugins(plugins) {
+      plugins$.next(plugins);
+    },
     subscription$: selectedAccount$,
     selectedAccount$,
     setAccount,

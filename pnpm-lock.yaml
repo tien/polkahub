@@ -8,6 +8,9 @@ dependencies:
   '@noble/hashes':
     specifier: ^2.0.1
     version: 2.0.1
+  '@polkadot-api/meta-signers':
+    specifier: ^0.1.16
+    version: 0.1.16
   '@polkadot-api/pjs-signer':
     specifier: ^0.6.16
     version: 0.6.16
@@ -905,7 +908,16 @@ packages:
       '@polkadot-api/metadata-builders': 0.13.6
       '@polkadot-api/substrate-bindings': 0.16.4
       '@polkadot-api/utils': 0.2.0
-    dev: true
+
+  /@polkadot-api/meta-signers@0.1.16:
+    resolution: {integrity: sha512-XTv2JpeR3TmFwUUjfC+UrbWi+ufH+ZVQH2yCaeFFwV9mKhoNIFImhZN/AO8ZroLlrp42xK2HuuJlod9qsWs8WQ==}
+    dependencies:
+      '@polkadot-api/metadata-builders': 0.13.6
+      '@polkadot-api/polkadot-signer': 0.1.6
+      '@polkadot-api/signer': 0.2.10
+      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/utils': 0.2.0
+    dev: false
 
   /@polkadot-api/metadata-builders@0.13.6:
     resolution: {integrity: sha512-4VIdMkuSYldfzUNBj/fqx4zL4brqFcCVTcwZg0B5zdmAz8Bu2HaNqe06kG13H1qYN4lnEgNX0aBpKxNewsGHbQ==}
@@ -965,7 +977,6 @@ packages:
       '@polkadot-api/signers-common': 0.1.17
       '@polkadot-api/substrate-bindings': 0.16.4
       '@polkadot-api/utils': 0.2.0
-    dev: true
 
   /@polkadot-api/signers-common@0.1.17:
     resolution: {integrity: sha512-Cp9amiZ99Ofh+7cUNIjeWIxEYorGOO/ZFucZHiX8mEjInMjFroZWZhxmcgoqw1t8y677wsov4npJTXKDqAFApg==}
