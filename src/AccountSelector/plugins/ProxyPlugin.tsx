@@ -1,13 +1,13 @@
 import { getProxySigner } from "@polkadot-api/meta-signers";
+import { DefaultedStateObservable, state } from "@react-rxjs/core";
 import { PolkadotSigner, SS58String } from "polkadot-api";
-import { BehaviorSubject, combineLatest, switchMap } from "rxjs";
-import { Account } from "../state";
+import { BehaviorSubject, combineLatest, map, switchMap } from "rxjs";
 import {
   localStorageProvider,
   persistedState,
   PersistenceProvider,
 } from "./persist";
-import { Plugin, SerializableAccount } from "./plugin";
+import { Account, Plugin, SerializableAccount } from "./plugin";
 
 export interface ProxyInfo {
   real: SS58String;
@@ -25,7 +25,11 @@ export interface ProxyAccount extends Account {
 
 export interface ProxyPlugin extends Plugin<ProxyAccount> {
   id: "proxy";
+  accounts$: DefaultedStateObservable<ProxyAccount[]>;
+
   setProxies: (proxies: ProxyInfo[]) => void;
+  addProxy: (proxy: ProxyInfo) => Promise<ProxyAccount | null>;
+  removeProxy: (proxy: ProxyInfo) => void;
 }
 
 export const proxyPlugin = (
@@ -63,12 +67,12 @@ export const proxyPlugin = (
     return getAccount(info, parentSigner.signer);
   };
 
-  const accounts$ = combineLatest([persistedAccounts$, plugins$]).pipe(
-    switchMap(async ([accounts]) => ({
-      multisig: (await Promise.all(accounts.map(proxyInfoToAccount))).filter(
-        (v) => v !== null
-      ),
-    }))
+  const accounts$ = state(
+    combineLatest([persistedAccounts$, plugins$]).pipe(
+      switchMap(([accounts]) => Promise.all(accounts.map(proxyInfoToAccount))),
+      map((v) => v.filter((v) => v !== null))
+    ),
+    []
   );
 
   return {
@@ -89,5 +93,29 @@ export const proxyPlugin = (
     receivePlugins: (plugins) => plugins$.next(plugins),
     subscription$: accounts$,
     setProxies: setPersistedAccounts,
+    addProxy: (proxy) => {
+      setPersistedAccounts((prev) => {
+        if (
+          prev.some(
+            (v) =>
+              v.real === proxy.real &&
+              v.parentSigner.address === proxy.parentSigner.address
+          )
+        )
+          return prev;
+        return [...prev, proxy];
+      });
+      return proxyInfoToAccount(proxy);
+    },
+    removeProxy: (proxy) =>
+      setPersistedAccounts((prev) =>
+        prev.filter(
+          (v) =>
+            !(
+              v.real === proxy.real &&
+              v.parentSigner.address === proxy.parentSigner.address
+            )
+        )
+      ),
   };
 };

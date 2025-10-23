@@ -8,6 +8,7 @@ import {
   DefaultedStateObservable,
   state,
   StateObservable,
+  withDefault,
 } from "@react-rxjs/core";
 import { combineKeys, MapWithChanges } from "@react-rxjs/utils";
 import {
@@ -29,13 +30,12 @@ import {
   tap,
   timer,
 } from "rxjs";
-import { Account } from "../state";
 import {
   localStorageProvider,
   persistedState,
   PersistenceProvider,
 } from "./persist";
-import { Plugin } from "./plugin";
+import { Account, Plugin } from "./plugin";
 
 export interface PjsWalletAccount extends Account {
   provider: "pjs-wallet";
@@ -45,6 +45,9 @@ export interface PjsWalletAccount extends Account {
 
 export interface PjsWalletPlugin extends Plugin<PjsWalletAccount> {
   id: "pjs-wallet";
+  accounts$: DefaultedStateObservable<PjsWalletAccount[]>;
+  accountGroups$: DefaultedStateObservable<Record<string, PjsWalletAccount[]>>;
+
   connectedExtensions$: DefaultedStateObservable<string[]>;
   setConnectedExtensions: (value: string[]) => void;
   availableExtensions$: DefaultedStateObservable<string[]>;
@@ -60,7 +63,7 @@ export interface PjsWalletPlugin extends Plugin<PjsWalletAccount> {
 }
 
 export const pjsWallet = (
-  opts: Partial<{
+  opts?: Partial<{
     persist: PersistenceProvider;
   }>
 ): PjsWalletPlugin => {
@@ -175,17 +178,24 @@ export const pjsWallet = (
     )
   );
 
-  const accounts$: Plugin<PjsWalletAccount>["accounts$"] =
-    connectedExtensionsAccounts$.pipe(
-      map((extensionAccounts) =>
-        Object.fromEntries(
-          extensionAccounts.map((extAcc) => [
-            extAcc.extension.name,
-            extAcc.accounts,
-          ])
-        )
+  const accountGroups$ = connectedExtensionsAccounts$.pipeState(
+    map((extensionAccounts) =>
+      Object.fromEntries(
+        extensionAccounts.map((extAcc) => [
+          extAcc.extension.name,
+          extAcc.accounts,
+        ])
       )
-    );
+    ),
+    withDefault<
+      Record<string, PjsWalletAccount[]>,
+      Record<string, PjsWalletAccount[]>
+    >({})
+  );
+  const accounts$ = accountGroups$.pipeState(
+    map((groups) => Object.values(groups).flat()),
+    withDefault<PjsWalletAccount[], PjsWalletAccount[]>([])
+  );
 
   return {
     id: "pjs-wallet",
@@ -208,6 +218,7 @@ export const pjsWallet = (
         )
       ),
     eq: (a, b) => a.address === b.address && a.extensionId === b.extensionId,
+    accountGroups$,
     accounts$,
     availableExtensions$,
     connectedExtensions$,

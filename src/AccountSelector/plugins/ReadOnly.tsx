@@ -1,21 +1,25 @@
 import { SS58String } from "polkadot-api";
 import { getPolkadotSigner } from "polkadot-api/signer";
 import { map } from "rxjs";
-import { Account } from "../state";
 import { getPublicKey } from "../util";
 import {
   localStorageProvider,
   persistedState,
   PersistenceProvider,
 } from "./persist";
-import { Plugin } from "./plugin";
+import { Account, Plugin } from "./plugin";
+import { DefaultedStateObservable, withDefault } from "@react-rxjs/core";
 
 export interface ReadOnlyPlugin extends Plugin {
   id: "readonly";
-  setPersistedAccounts: (payload: SS58String[]) => void;
+  accounts$: DefaultedStateObservable<Account[]>;
+  setAccounts: (payload: SS58String[]) => void;
+  addAccount: (address: SS58String) => Account;
+  removeAccount: (address: SS58String) => void;
+  toAccount: (address: SS58String) => Account;
 }
 
-export const readOnlyPlugin = (
+export const createReadOnlyPlugin = (
   opts?: Partial<{
     fakeSigner: boolean;
     persist: PersistenceProvider;
@@ -38,17 +42,27 @@ export const readOnlyPlugin = (
     signer: fakeSigner ? createFakeSigner(address) : undefined,
   });
 
-  const accounts$ = persistedAccounts$.pipe(
-    map((accounts) => ({
-      readonly: accounts.map(getAccount),
-    }))
+  const accounts$ = persistedAccounts$.pipeState(
+    map((accounts) => accounts.map(getAccount)),
+    withDefault([])
   );
 
   return {
     id: "readonly",
     deserialize: (acc) => getAccount(acc.address),
     accounts$,
-    setPersistedAccounts,
+    setAccounts: setPersistedAccounts,
+    addAccount: (addr) => {
+      setPersistedAccounts((v) => {
+        const set = new Set(v);
+        set.add(addr);
+        return [...set];
+      });
+      return getAccount(addr);
+    },
+    removeAccount: (addr) =>
+      setPersistedAccounts((v) => v.filter((acc) => acc !== addr)),
+    toAccount: getAccount,
   };
 };
 

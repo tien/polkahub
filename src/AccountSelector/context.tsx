@@ -11,9 +11,8 @@ import {
   useId,
 } from "react";
 import { EMPTY, merge } from "rxjs";
-import { Plugin } from "./plugins";
+import { Account, Plugin } from "./plugins";
 import {
-  Account,
   addInstance,
   removeInstance,
   setPlugins,
@@ -48,7 +47,8 @@ export const useAccountSelectorContext = () => {
 };
 
 type ProviderProps = PropsWithChildren<{
-  plugins: Plugin[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  plugins: Plugin<any>[];
   getIdentity?: (address: SS58String) => Promise<Identity | null>;
 }>;
 export const AccountSelectorProvider: FC<ProviderProps> = ({

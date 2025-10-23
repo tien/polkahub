@@ -5,7 +5,7 @@ import {
   decAnyMetadata,
   unifyMetadata,
 } from "@polkadot-api/substrate-bindings";
-import { DefaultedStateObservable, state } from "@react-rxjs/core";
+import { DefaultedStateObservable, state, withDefault } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
 import {
   Binary,
@@ -16,13 +16,12 @@ import {
 } from "polkadot-api";
 import { mergeUint8 } from "polkadot-api/utils";
 import { firstValueFrom, map, merge, race } from "rxjs";
-import { Account } from "../state";
 import {
   localStorageProvider,
   persistedState,
   PersistenceProvider,
 } from "./persist";
-import { Plugin } from "./plugin";
+import { Account, Plugin } from "./plugin";
 
 export interface AccountInfo {
   address: SS58String;
@@ -35,8 +34,12 @@ export interface PolkadotVaultAccount extends Account {
 
 export interface PolkadotVaultPlugin extends Plugin<PolkadotVaultAccount> {
   id: "polkadot-vault";
-  vaultAccounts$: DefaultedStateObservable<AccountInfo[]>;
-  setVaultAccounts: (payload: AccountInfo[]) => void;
+  accounts$: DefaultedStateObservable<PolkadotVaultAccount[]>;
+
+  setAccounts: (payload: AccountInfo[]) => void;
+  addAccount: (payload: AccountInfo) => PolkadotVaultAccount;
+  removeAccount: (payload: AccountInfo) => void;
+
   activeTx$: DefaultedStateObservable<Uint8Array<ArrayBufferLike> | null>;
   setTx: (payload: Uint8Array<ArrayBufferLike>) => void;
   setSignature: (payload: Uint8Array<ArrayBufferLike>) => void;
@@ -127,6 +130,7 @@ export const polkadotVaultPlugin = (
           signature.slice(1),
           extra,
           callData,
+          // TODO schema?
           "Sr25519"
         );
 
@@ -142,20 +146,28 @@ export const polkadotVaultPlugin = (
     signer: createVaultSigner(info),
   });
 
-  const accounts$ = vaultAccounts$.pipe(
-    map((accounts) => ({
-      "polkadot-vault": accounts.map(accountInfoToAccount),
-    }))
+  const accounts$ = vaultAccounts$.pipeState(
+    map((accounts) => accounts.map(accountInfoToAccount)),
+    withDefault([])
   );
 
   return {
     id: "polkadot-vault",
+    serialize: ({ address, genesis, provider }) => ({
+      address,
+      provider,
+      extra: genesis,
+    }),
     deserialize: (account) =>
       firstValueFrom(
         vaultAccounts$.pipe(
           map(
             (accounts) =>
-              accounts.find((acc) => acc.address === account.address) ?? null
+              accounts.find(
+                (acc) =>
+                  acc.address === account.address &&
+                  acc.genesis === account.extra
+              ) ?? null
           ),
           map((info): PolkadotVaultAccount | null =>
             info ? accountInfoToAccount(info) : null
@@ -167,8 +179,22 @@ export const polkadotVaultPlugin = (
     cancelTx,
     setSignature,
     setTx,
-    setVaultAccounts,
-    vaultAccounts$,
+    setAccounts: setVaultAccounts,
+    addAccount: (account) => {
+      const accountKey = `${account.address}:${account.genesis}`;
+      setVaultAccounts((oldAccounts) => {
+        if (
+          oldAccounts.some(
+            (acc) => `${acc.address}:${acc.genesis}` === accountKey
+          )
+        )
+          return oldAccounts;
+        return [...oldAccounts, account];
+      });
+      return accountInfoToAccount(account);
+    },
+    removeAccount: (addr) =>
+      setVaultAccounts((v) => v.filter((acc) => acc !== addr)),
   };
 };
 

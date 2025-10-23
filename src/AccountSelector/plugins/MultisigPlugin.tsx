@@ -10,14 +10,14 @@ import {
 } from "@polkadot-api/substrate-bindings";
 import { Binary, PolkadotSigner, SS58String } from "polkadot-api";
 import { BehaviorSubject, combineLatest, switchMap } from "rxjs";
-import { Account } from "../state";
 import { getPublicKey } from "../util";
 import {
   localStorageProvider,
   persistedState,
   PersistenceProvider,
 } from "./persist";
-import { Plugin, SerializableAccount } from "./plugin";
+import { Account, Plugin, SerializableAccount } from "./plugin";
+import { DefaultedStateObservable, state } from "@react-rxjs/core";
 
 export interface MultisigInfo {
   threshold: number;
@@ -34,7 +34,11 @@ export interface MultisigAccount extends Account {
 
 export interface MultisigPlugin extends Plugin<MultisigAccount> {
   id: "multisig";
+  accounts$: DefaultedStateObservable<MultisigAccount[]>;
+
   setMultisigs: (multisigs: MultisigInfo[]) => void;
+  addMultisig: (multisig: MultisigInfo) => Promise<MultisigAccount>;
+  removeMultisig: (addr: SS58String) => void;
 }
 
 export const multisigPlugin = (
@@ -75,7 +79,7 @@ export const multisigPlugin = (
     persist,
     [] as MultisigInfo[]
   );
-  const plugins$ = new BehaviorSubject<Plugin[]>([]);
+  const plugins$ = new BehaviorSubject<Plugin<Account>[]>([]);
 
   const getAccount = (
     info: MultisigInfo,
@@ -109,10 +113,14 @@ export const multisigPlugin = (
     return getAccount(info, parentSigner?.signer);
   };
 
-  const accounts$ = combineLatest([persistedAccounts$, plugins$]).pipe(
-    switchMap(async ([accounts]) => ({
-      multisig: await Promise.all(accounts.map(multisigInfoToAccount)),
-    }))
+  const accounts$ = state(
+    combineLatest([persistedAccounts$, plugins$]).pipe(
+      switchMap(
+        async ([accounts]) =>
+          await Promise.all(accounts.map(multisigInfoToAccount))
+      )
+    ),
+    []
   );
 
   return {
@@ -133,6 +141,18 @@ export const multisigPlugin = (
     receivePlugins: (plugins) => plugins$.next(plugins),
     subscription$: accounts$,
     setMultisigs: setPersistedAccounts,
+    addMultisig: (multisig) => {
+      const addr = getMultisigAddress(multisig);
+      setPersistedAccounts((prev) => {
+        if (prev.some((v) => getMultisigAddress(v) === addr)) return prev;
+        return [...prev, multisig];
+      });
+      return multisigInfoToAccount(multisig);
+    },
+    removeMultisig: (addr) =>
+      setPersistedAccounts((prev) =>
+        prev.filter((v) => getMultisigAddress(v) !== addr)
+      ),
   };
 };
 

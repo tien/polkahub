@@ -27,13 +27,12 @@ import {
   takeUntil,
   tap,
 } from "rxjs";
-import { Account } from "../state";
 import {
   localStorageProvider,
   persistedState,
   PersistenceProvider,
 } from "./persist";
-import { Plugin } from "./plugin";
+import { Plugin, Account } from "./plugin";
 
 export interface WalletConnectAccount extends Account {
   provider: "walletconnect";
@@ -53,6 +52,8 @@ type WalletConnectStatus =
 
 export interface WalletConnectPlugin extends Plugin<WalletConnectAccount> {
   id: "walletconnect";
+  accounts$: DefaultedStateObservable<WalletConnectAccount[]>;
+
   toggleWalletConnect: () => void;
   walletConnectStatus$: DefaultedStateObservable<WalletConnectStatus>;
 }
@@ -284,18 +285,12 @@ export const walletConnectPlugin = (
     }));
   };
 
-  const accounts$: Plugin<WalletConnectAccount>["accounts$"] =
-    walletConnectStatus$.pipeState(
-      map(
-        (status): Record<string, WalletConnectAccount[]> =>
-          status.type === "connected"
-            ? {
-                walletconnect: getSignersFromSession(status.session),
-              }
-            : {}
-      ),
-      withDefault({} as Record<string, WalletConnectAccount[]>)
-    );
+  const accounts$ = walletConnectStatus$.pipeState(
+    map((status): WalletConnectAccount[] =>
+      status.type === "connected" ? getSignersFromSession(status.session) : []
+    ),
+    withDefault([] as WalletConnectAccount[])
+  );
 
   return {
     id: "walletconnect",
@@ -304,9 +299,7 @@ export const walletConnectPlugin = (
         accounts$.pipe(
           map(
             (accounts) =>
-              accounts?.walletconnect.find(
-                (acc) => acc.address === account.address
-              ) ?? null
+              accounts.find((acc) => acc.address === account.address) ?? null
           )
         )
       ),

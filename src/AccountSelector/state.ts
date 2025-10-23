@@ -5,16 +5,8 @@ import {
   createSignal,
   mergeWithKey,
 } from "@react-rxjs/utils";
-import type { PolkadotSigner, SS58String } from "polkadot-api";
 import { map, scan } from "rxjs";
 import type { Plugin } from "./plugins";
-
-export interface Account {
-  provider: string;
-  address: SS58String;
-  signer?: PolkadotSigner;
-  name?: string;
-}
 
 const [addInstance$, addInstance] = createSignal<string>();
 const [removeInstance$, removeInstance] = createSignal<string>();

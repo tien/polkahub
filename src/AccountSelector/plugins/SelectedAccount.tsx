@@ -15,9 +15,8 @@ import {
   timeout,
 } from "rxjs";
 import { useAccountSelectorContext } from "../context";
-import { Account } from "../state";
 import { localStorageProvider, PersistenceProvider } from "./persist";
-import { Plugin, SerializableAccount } from "./plugin";
+import { Account, Plugin, SerializableAccount } from "./plugin";
 
 export interface SelectedAccountPlugin extends Plugin {
   id: "selected-account";
@@ -94,7 +93,7 @@ export const selectedAccountPlugin = (
   return {
     id: "selected-account",
     deserialize: () => null,
-    accounts$: of({}),
+    accounts$: of([]),
     receivePlugins(plugins) {
       plugins$.next(plugins);
     },
@@ -108,7 +107,6 @@ const deselectWhenRemoved$ = (value: Account, plugin: Plugin) =>
   concat([value], NEVER).pipe(
     takeUntil(
       plugin.accounts$.pipe(
-        map((accounts) => Object.values(accounts).flat()),
         filter((accounts) => {
           const eqFn = plugin.eq ?? ((a, b) => a.address === b.address);
           return accounts.every((acc) => !eqFn(acc, value));
