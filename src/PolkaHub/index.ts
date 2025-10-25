@@ -1,8 +1,8 @@
 export {
-  AccountSelectorContext,
-  AccountSelectorProvider,
+  PolkaHubContext,
+  PolkaHubProvider,
   ModalContext,
-  useAccountSelectorContext,
+  usePolkaHubContext,
   type Identity,
 } from "./context";
 export * from "./plugins";

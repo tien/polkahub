@@ -14,7 +14,7 @@ import {
   takeUntil,
   timeout,
 } from "rxjs";
-import { useAccountSelectorContext } from "../context";
+import { usePolkaHubContext } from "../context";
 import { localStorageProvider, PersistenceProvider } from "./persist";
 import { Account, Plugin, SerializableAccount } from "./plugin";
 
@@ -119,7 +119,7 @@ const deselectWhenRemoved$ = (value: Account, plugin: Plugin) =>
   );
 
 export const useSelectedAccount = () => {
-  const ctx = useAccountSelectorContext();
+  const ctx = usePolkaHubContext();
   const plugin = ctx.plugins.find(
     (plugin) => plugin.id === "selected-account"
   ) as SelectedAccountPlugin | undefined;

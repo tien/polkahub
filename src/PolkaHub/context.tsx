@@ -29,19 +29,18 @@ export interface Identity {
   subId?: string;
 }
 
-export interface AccountSelectorContext {
+export interface PolkaHubContext {
   id: string;
   plugins: Plugin[];
   getIdentity: (address: SS58String) => Promise<Identity | null>;
   availableAccounts: Record<string, Account[]>;
 }
-export const AccountSelectorContext =
-  createContext<AccountSelectorContext | null>(null);
+export const PolkaHubContext = createContext<PolkaHubContext | null>(null);
 
-export const useAccountSelectorContext = () => {
-  const ctx = useContext(AccountSelectorContext);
+export const usePolkaHubContext = () => {
+  const ctx = useContext(PolkaHubContext);
   if (!ctx) {
-    throw new Error("Missing AccountSelectorContext");
+    throw new Error("Missing PolkaHubContext");
   }
   return ctx;
 };
@@ -51,7 +50,7 @@ type ProviderProps = PropsWithChildren<{
   plugins: Plugin<any>[];
   getIdentity?: (address: SS58String) => Promise<Identity | null>;
 }>;
-export const AccountSelectorProvider: FC<ProviderProps> = ({
+export const PolkaHubProvider: FC<ProviderProps> = ({
   children,
   plugins,
   getIdentity = async () => null,
@@ -64,7 +63,7 @@ export const AccountSelectorProvider: FC<ProviderProps> = ({
     <Subscribe
       source$={subscription$(id)}
       fallback={
-        <AccountSelectorContext
+        <PolkaHubContext
           value={{
             getIdentity,
             id,
@@ -73,22 +72,22 @@ export const AccountSelectorProvider: FC<ProviderProps> = ({
           }}
         >
           <RemoveSubscribe>{children}</RemoveSubscribe>
-        </AccountSelectorContext>
+        </PolkaHubContext>
       }
     >
-      <InnerAccountSelectorProvider
+      <InternalPolkaHubProvider
         id={id}
         plugins={plugins}
         getIdentity={getIdentity}
         {...rest}
       >
         <RemoveSubscribe>{children}</RemoveSubscribe>
-      </InnerAccountSelectorProvider>
+      </InternalPolkaHubProvider>
     </Subscribe>
   );
 };
 
-const InnerAccountSelectorProvider: FC<
+const InternalPolkaHubProvider: FC<
   ProviderProps & {
     id: string;
   }
@@ -110,7 +109,7 @@ const InnerAccountSelectorProvider: FC<
   }, [id, plugins]);
 
   return (
-    <AccountSelectorContext
+    <PolkaHubContext
       value={{
         id,
         plugins,
@@ -119,6 +118,6 @@ const InnerAccountSelectorProvider: FC<
       }}
     >
       {children}
-    </AccountSelectorContext>
+    </PolkaHubContext>
   );
 };
