@@ -25,7 +25,10 @@ export const SelectAccountModal: FC<PropsWithChildren> = ({ children }) => {
   // Experimenting a bit but... who says I can't do this?
   const [content, setContent] = useState<ReactNode | null>(null);
 
-  const contextValue = useMemo(() => ({ setContent }), []);
+  const contextValue = useMemo(
+    () => ({ setContent, closeModal: () => setOpen(false) }),
+    []
+  );
 
   return (
     <Dialog

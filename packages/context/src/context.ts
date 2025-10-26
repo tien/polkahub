@@ -9,6 +9,7 @@ import {
 } from "react";
 
 export const ModalContext = createContext<{
+  closeModal: () => void;
   setContent: (element: ReactNode) => void;
 } | null>(null);
 
