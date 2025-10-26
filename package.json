@@ -1,45 +1,14 @@
 {
-  "name": "@polkadot-api/react-components",
-  "version": "0.3.0",
   "type": "module",
-  "private": false,
+  "private": true,
   "scripts": {
-    "build": "tsc -b && rollup -c ./rollup.config.js",
-    "lint": "eslint ."
+    "build": "pnpm -r build"
   },
-  "files": [
-    "dist"
-  ],
-  "license": "AGPL-3.0-only",
-  "sideEffects": false,
-  "exports": {
-    ".": {
-      "types": "./dist/src/index.d.ts",
-      "module": "./dist/src/index.js",
-      "import": "./dist/src/index.js",
-      "default": "./dist/src/index.js"
-    },
-    "./package.json": "./package.json"
-  },
-  "types": "./dist/src/index.d.ts",
-  "main": "./dist/src/index.js",
-  "module": "./dist/src/index.js",
-  "browser": "./dist/src/index.js",
-  "dependencies": {
-    "@noble/hashes": "^2.0.1",
-    "@polkadot-api/substrate-bindings": "^0.16.4",
-    "lucide-react": "^0.548.0"
-  },
-  "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
-  },
+  "dependencies": {},
+  "peerDependencies": {},
   "devDependencies": {
     "@eslint/js": "^9.38.0",
     "@types/node": "^24.9.1",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
-    "@vitejs/plugin-react": "^5.1.0",
     "eslint": "^9.38.0",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",

@@ -12,8 +12,8 @@ export default [
     ...commonOptions,
     plugins: [
       postcss({
-        extract: false,
-        inject: true,
+        extract: true,
+        inject: false,
         minimize: true,
       }),
       esbuild(),

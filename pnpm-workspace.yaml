@@ -1,0 +1,8 @@
+packages:
+  - packages/*
+onlyBuiltDependencies:
+  - "@swc/core"
+  - esbuild
+  - node-hid
+  - sqlite3
+  - usb
