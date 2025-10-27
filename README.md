@@ -1,48 +1,51 @@
 # PolkaHub
 
-PolkaHub is a library to easily connect with different kinds of Polkadot Wallets, from browser extensions, to polkadot vault, to ledger devices.
+PolkaHub is a toolkit to integrate with multiple Polkadot Wallets, from browser extensions to air-gapped Polkadot Vault or Ledger devices, all in a modular architecture for your own setup.
 
 ![PolkaHub](./polkahub.png)
 
 ## Features
 
-- Modular design, plugin-based.
-- State decoupled from UI.
-- Powered by Polkadot-API utilities, but decoupled from it.
-- Integrate with popular polkadot wallets in minutes:
+- ⚡ First-class support for popular Polkadot wallets under one API:
   - Polkadot browser extensions
-  - Polkadot vault
+  - Polkadot Vault
   - Ledger devices
   - Read-only accounts
-  - Wallet connect (UI in development)
+  - WalletConnect (UI in development)
   - Proxy accounts (UI in development)
   - Multisig accounts (UI in development)
-- Choose your own setup, even choose with or without "select account"
-- Context-based API to access accounts
+- 🧩 Plugin-based architecture so you can compose providers, account selectors, and custom wallets.
+- ⚙️ Independent reactive state layer for developing your own UI.
+- 🚀 Drop-in components to onboard users fast: account selection, vault import, read-only sources, and more.
+- 🎣 Context-powered React hooks plus raw observables when you want total control.
 
-## Usage
+## Installation
 
-Install from npm:
+Install from npm
 
 ```sh
 pnpm i polkahub
 ```
 
-### React UI Components
+## Quick Start (React UI)
 
-If you want to use the pre-made UI components, it's required for your project to have tailwind v4 with a shadcn/ui theme configured. With that in place:
+PolkaHub ships with ready-made React components styled with tailwind and shadcn/ui. Make sure your app already has those configured before proceeding.
 
-1. Import polkahub tailwind styles in your main `index.css`:
+### 1. Import styles
+
+Add the shared styles to your main stylesheet (for example `src/index.css`):
 
 ```css
 @import "tailwindcss";
 @import "polkahub";
 ```
 
-2. Import, create and configure the providers you want:
+### 2. Configure providers
+
+Create the providers you want to expose. Each provider is optional — pick only what your app needs.
 
 ```ts
-/// file: account-providers.ts
+// file: account-providers.ts
 import {
   createLedgerProvider,
   createPjsWalletProvider,
@@ -51,7 +54,6 @@ import {
   createSelectedAccountPlugin,
 } from "polkahub";
 
-// Example, these are all optional. Use the ones you need.
 const selectedAccountPlugin = createSelectedAccountPlugin();
 const pjsWalletProvider = createPjsWalletProvider();
 const polkadotVaultProvider = createPolkadotVaultProvider();
@@ -65,9 +67,12 @@ export const accountProviders = [
 ];
 ```
 
-3. Wrap your application with the context:
+### 3. Wrap your app
+
+Provide the plugins and any optional data fetchers (balance, identity, etc.) through the `PolkaHubProvider`.
 
 ```tsx
+import { createRoot } from "react-dom/client";
 import { PolkaHubProvider } from "polkahub";
 import { StrictMode } from "react";
 import App from "./App.tsx";
@@ -79,12 +84,12 @@ createRoot(document.getElementById("root")!).render(
       plugins={accountProviders}
       getBalance={async (address: SS58String) => {
         // Some plugins show the balance of an account for reference.
-        // Use your favorite provider, or ignore / return null to disable
+        // Use your polkadot client, or ignore / return null to disable.
         return null;
       }}
       getIdentity={async (address: SS58String) => {
         // Some plugins show the identity of an account for reference.
-        // Use your favorite provider, or ignore / return null to disable
+        // Use your polkadot client, or ignore / return null to disable.
         return null;
       }}
     >
@@ -94,19 +99,16 @@ createRoot(document.getElementById("root")!).render(
 );
 ```
 
-4. Add the modal button where you want to, passing in the UI components to manage the state:
+### 4. Create the modal
+
+Create a button that triggers the modal, with the components you have selected.
 
 ```tsx
 import {
-  // Button that opens an empty dialog
   PolkaHubModal,
-  // Component to add an account selection
   SelectAccountField,
-  // Component to manage PJS-like browser wallets
   ManagePjsWallets,
-  // Button to manage polkadot vault accounts
   ManageVault,
-  // Button to manage user-defined accounts
   ManageReadOnly,
 } from "polkahub";
 
@@ -126,51 +128,40 @@ export const ConnectButton = () => (
 );
 ```
 
-5. Consume accounts
+### 5. Consume accounts
+
+Use the provided hooks anywhere under the provider to access the available accounts.
 
 ```tsx
-// Anywhere within PolkadotHubContext
 import { useSelectedAccount, useAvailableAccounts } from "polkahub";
 
 const MyComponent = () => {
-  // Record groupName => Account[]
-  const availableAccounts = useAvailableAccounts();
-
-  // `Account` is an object with the account info, and an optional property "signer"
-  // that can be used to sign any transaction
-  // (it's optional for the read-only accounts)
-
-  // If selectedAccountPlugin is added, you can quickly grab/set the selected account
+  const availableAccounts = useAvailableAccounts(); // Record<groupName, Account[]>
   const [account, setAccount] = useSelectedAccount();
 
   return <div>…</div>;
 };
 ```
 
-### Other React UIs
+## Build your own React UI
 
-The modular architecture of PolkaHub makes it possible to build your own UI instead of using the bundled one.
-
-1. Follow the steps setting up the plugins and the global context mentioned above.
-
-2. Use the available hooks to access the data with each plugin to integrate with it
+PolkaHub's modular architecture makes it possible to build your own UI reusing the same plugin setup. Reach into the state with hooks like `usePlugin`.
 
 ```tsx
 import { usePlugin } from "polkahub";
+
 const MyCustomPjsWalletManager = () => {
   const plugin = usePlugin<PolkadotVaultProvider>(polkadotVaultProviderId)!;
-
-  // Or import the plugin you created on step 1
 
   return <div>…</div>;
 };
 ```
 
-3. Read below to consume the state.
+The hook returns the plugin instance, giving you direct access to its observables and methods. Combine it with your own UI controls to tailor the experience.
 
-### State-only (Advanced)
+## State-only usage (Advanced)
 
-Each plugin has a minimal structure, but can define additional properties both on the plugin itself and the Account object it works with:
+Every plugin implements a minimal contract and can expose additional methods or metadata tailored to its own use case:
 
 ```ts
 interface Account {
@@ -189,39 +180,25 @@ interface SerializableAccount<T = unknown> {
 
 interface Plugin<A extends Account = Account> {
   id: string;
-
-  // Methods needed by other plugins (like select account) to persist accounts from other plugins
-  // Defaults to grabbing the serializable values from the base "Account"
   serialize?: (account: A) => SerializableAccount;
   deserialize: (value: SerializableAccount) => Promise<A | null> | A | null;
-
-  // Method needed to check when an account was removed
-  // Defaults to address equality
   eq?: (a: A, b: A) => boolean;
-
   accounts$: Observable<A[]>;
-  // Defaults to Record<id, accounts$>
   accountGroups$?: Observable<Record<string, A[]>>;
-
-  // Hooks
-  // Used by plugins which might need to query other plugins (select account, multisig, proxy, etc.)
   receivePlugins?: (plugins: Plugin[]) => void;
-  // Control observable to start subscriptions and add a teardown mechanism.
   subscription$?: Observable<unknown>;
 }
 ```
 
-If you're consuming the state without using the React `PolkaHubProvider`, then all you need to do to make the pre-made plugins work is just wire them up.
-
-Because `PolkaHubProvider` is a react component and technically you can have multiple instances, polkahub supports multiple instances. This means that every global observable exported from 'polkahub' needs an instanceId. You can hard-code it if you have control of that:
+If you are not using React, wire the plugins manually and manage the observables yourself:
 
 ```ts
 import { merge, EMPTY } from "rxjs";
-import type { Plugin, setPlugins, addInstance } from "polkahub";
+import { addInstance, setPlugins } from "polkahub";
+import type { Plugin } from "polkahub";
 
 const instanceId = "my-app";
 const setupPlugins = (plugins: Plugin<any>) => {
-  // initialize the subscription$ for those plugins that need it.
   const sub = merge(plugins.map((p) => p.subscription$ ?? EMPTY)).subscribe();
 
   addInstance(instanceId);
@@ -231,4 +208,4 @@ const setupPlugins = (plugins: Plugin<any>) => {
 };
 ```
 
-Every pre-bundled plugin exposes its own state through observables, as that allows for reactivity. Specific plugin docs are WIP, browse the plugin source code to understand their state.
+Each bundled plugin exposes observables to allow for reactive workflows. Docs for individual plugins are in progress; peek at the source to explore their state shape in the meantime.
