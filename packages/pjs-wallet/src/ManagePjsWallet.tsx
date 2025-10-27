@@ -21,11 +21,11 @@ const knownExtensions: Record<string, { name: string; logo: string }> = {
   },
   talisman: {
     name: "Talisman",
-    logo: subwallet,
+    logo: talisman,
   },
   "subwallet-js": {
     name: "Subwallet",
-    logo: talisman,
+    logo: subwallet,
   },
 };
 
