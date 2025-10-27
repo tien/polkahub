@@ -13,7 +13,7 @@ export default [
     ...commonOptions,
     plugins: [
       url({
-        include: ["**/*.webp", "**/*.png", "**/*.jpg"],
+        include: ["**/*.webp", "**/*.png", "**/*.jpg", "**/*.svg"],
       }),
       postcss({
         extract: true,

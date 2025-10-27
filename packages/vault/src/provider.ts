@@ -23,6 +23,7 @@ import {
 import { mergeUint8 } from "polkadot-api/utils";
 import { firstValueFrom, map, merge, race } from "rxjs";
 
+export const polkadotVaultProviderId = "polkadot-vault";
 export interface VaultAccountInfo {
   address: SS58String;
   genesis: HexString;
@@ -52,7 +53,7 @@ export const createPolkadotVaultProvider = (
   }>
 ): PolkadotVaultProvider => {
   const { persist } = {
-    persist: localStorageProvider("polkadot-vault"),
+    persist: localStorageProvider(polkadotVaultProviderId),
     ...opts,
   };
 
@@ -149,7 +150,7 @@ export const createPolkadotVaultProvider = (
   const accountInfoToAccount = (
     info: VaultAccountInfo
   ): PolkadotVaultAccount => ({
-    provider: "polkadot-vault",
+    provider: polkadotVaultProviderId,
     address: info.address,
     genesis: info.genesis,
     signer: createVaultSigner(info),
@@ -161,7 +162,7 @@ export const createPolkadotVaultProvider = (
   );
 
   return {
-    id: "polkadot-vault",
+    id: polkadotVaultProviderId,
     serialize: ({ address, genesis, provider }) => ({
       address,
       provider,

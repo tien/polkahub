@@ -3,4 +3,5 @@
 @import "@polkahub/read-only";
 @import "@polkahub/select-account";
 @import "@polkahub/ui-components";
+@import "@polkahub/vault";
 @source "./dist";
