@@ -447,9 +447,18 @@ importers:
       '@polkadot-api/substrate-bindings':
         specifier: ^0.16.4
         version: 0.16.4
+      '@polkahub/context':
+        specifier: workspace:*
+        version: link:../context
       '@polkahub/plugin':
         specifier: workspace:*
         version: link:../plugin
+      '@polkahub/select-account':
+        specifier: workspace:*
+        version: link:../select-account
+      '@polkahub/ui-components':
+        specifier: workspace:*
+        version: link:../ui-components
       '@react-rxjs/core':
         specifier: ^0.10.8
         version: 0.10.8(react@19.2.0)(rxjs@7.8.2)

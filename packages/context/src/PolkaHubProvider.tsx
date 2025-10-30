@@ -9,16 +9,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import {
-  catchError,
-  combineLatest,
-  EMPTY,
-  from,
-  ignoreElements,
-  merge,
-  startWith,
-  switchMap,
-} from "rxjs";
+import { catchError, combineLatest, EMPTY, from, merge } from "rxjs";
 import { AvailableAccountsContext, Identity, PolkaHubContext } from "./context";
 import {
   addInstance,
@@ -59,24 +50,23 @@ export const PolkaHubProvider: FC<ProviderProps> = ({
   );
   useEffect(() => {
     const sub = combineLatest(
-      asyncPlugins.map((p) =>
-        from(Promise.resolve(p)).pipe(
-          switchMap((plugin) =>
-            (plugin.subscription$ ?? EMPTY).pipe(
-              ignoreElements(),
-              catchError(() => []),
-              startWith(plugin)
-            )
-          )
-        )
-      )
+      asyncPlugins.map((p) => from(Promise.resolve(p)))
     ).subscribe((plugins) => setSyncPlugins(plugins));
 
     return () => sub.unsubscribe();
   }, [id, asyncPlugins]);
 
   useEffect(() => {
-    const sub = merge(plugins.map((p) => p.subscription$ ?? EMPTY)).subscribe();
+    const sub = merge(
+      plugins.map((p) =>
+        (p.subscription$ ?? EMPTY).pipe(
+          catchError((ex) => {
+            console.error(`Plugin ${p.id} subscription errored`, ex);
+            return [];
+          })
+        )
+      )
+    ).subscribe();
     setPlugins(id, plugins);
 
     return () => sub.unsubscribe();

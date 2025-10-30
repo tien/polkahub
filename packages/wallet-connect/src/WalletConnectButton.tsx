@@ -1,7 +1,7 @@
 import { usePlugin } from "@polkahub/context";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { of } from "rxjs";
-import { SourceButton } from "../../ui-components/dist/src";
+import { SourceButton } from "@polkahub/ui-components";
 import wcLogo from "./assets/walletConnect.svg";
 import { WalletConnectProvider, walletConnectProviderId } from "./provider";
 
