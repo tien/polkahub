@@ -122,6 +122,46 @@ importers:
         specifier: ^19.2.0
         version: 19.2.0
 
+  packages/mimir:
+    dependencies:
+      '@mimirdev/apps-inject':
+        specifier: ^3.2.0
+        version: 3.2.0
+      '@mimirdev/papi-signer':
+        specifier: ^3.1.0
+        version: 3.1.0(@polkadot-api/polkadot-signer@0.1.6)(@polkadot-api/substrate-bindings@0.16.4)(@polkadot-api/utils@0.2.0)
+      '@polkadot-api/polkadot-signer':
+        specifier: ^0.1.6
+        version: 0.1.6
+      '@polkadot-api/substrate-bindings':
+        specifier: ^0.16.4
+        version: 0.16.4
+      '@polkadot-api/utils':
+        specifier: ^0.2.0
+        version: 0.2.0
+      '@polkahub/context':
+        specifier: workspace:*
+        version: link:../context
+      '@polkahub/plugin':
+        specifier: workspace:*
+        version: link:../plugin
+      '@polkahub/ui-components':
+        specifier: workspace:*
+        version: link:../ui-components
+      '@react-rxjs/core':
+        specifier: ^0.10.8
+        version: 0.10.8(react@19.2.0)(rxjs@7.8.2)
+      rxjs:
+        specifier: ^7.8.2
+        version: 7.8.2
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.2
+        version: 19.2.2
+      react:
+        specifier: ^19.2.0
+        version: 19.2.0
+
   packages/multisig:
     dependencies:
       '@polkadot-api/meta-signers':
@@ -213,6 +253,9 @@ importers:
       '@polkahub/ledger':
         specifier: workspace:*
         version: link:../ledger
+      '@polkahub/mimir':
+        specifier: workspace:*
+        version: link:../mimir
       '@polkahub/multisig':
         specifier: workspace:*
         version: link:../multisig
@@ -1070,6 +1113,36 @@ packages:
     resolution: {integrity: sha512-N+dm5PAYdQ8e6UlywyyrgI2t++wFGXfHx+dSJ1oBrg6FAxUj40jId++EaRm80MKX5JnlH1sBsyZ5h0bcZKemCg==}
     dependencies:
       '@lit-labs/ssr-dom-shim': 1.4.0
+    dev: false
+
+  /@mimirdev/apps-inject@3.2.0:
+    resolution: {integrity: sha512-yKWFaZsUgxaPIU/xM8OFvWRsNld6x8iCeqbQbt/LyUsikLGlkrHOZl29MwMfSQiYAWrYNqwhFpCU07sS2DTOLQ==}
+    dependencies:
+      '@mimirdev/apps-sdk': 3.1.0
+    dev: false
+
+  /@mimirdev/apps-sdk@3.1.0:
+    resolution: {integrity: sha512-EevWZhaaP9gKcIJeEbokAugx5X0sd8jRae1CX1Uzg5KsVxODjeLLaAE1D90Lj6//JE1NPaEq3QKi9PliSMLVNg==}
+    dependencies:
+      eventemitter3: 5.0.1
+    dev: false
+
+  /@mimirdev/apps-transports@3.1.0:
+    resolution: {integrity: sha512-8t/lPZMh/bBxQx4urWsILKjBO9FHRIPzXb72znQkwXRCK7H6WEXFhTCoqJthztf3ihEfqmkdQUKEKRKt5pdNtw==}
+    dev: false
+
+  /@mimirdev/papi-signer@3.1.0(@polkadot-api/polkadot-signer@0.1.6)(@polkadot-api/substrate-bindings@0.16.4)(@polkadot-api/utils@0.2.0):
+    resolution: {integrity: sha512-nqWemLZpG43fxQzpnvN3lLYxV3ffosstSfxkPuvW/8XIJrDCjcjRad3URhWTy536jKMFfoClaqlmO1uH/ym0aA==}
+    peerDependencies:
+      '@polkadot-api/polkadot-signer': '*'
+      '@polkadot-api/substrate-bindings': '*'
+      '@polkadot-api/utils': '*'
+    dependencies:
+      '@mimirdev/apps-sdk': 3.1.0
+      '@mimirdev/apps-transports': 3.1.0
+      '@polkadot-api/polkadot-signer': 0.1.6
+      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/utils': 0.2.0
     dev: false
 
   /@msgpack/msgpack@3.1.2:
