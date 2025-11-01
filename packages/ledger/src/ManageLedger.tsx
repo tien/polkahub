@@ -191,10 +191,10 @@ const ImportAccounts: FC<{ onClose: () => void }> = ({ onClose }) => {
     <div className="space-y-2">
       {error ? (
         <div className="space-y-2" style={{ height: PLACEHOLDER_HEIGHT }}>
-          <p className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
             <TriangleAlert className="text-destructive" />
-            <div>Error: {error}</div>
-          </p>
+            <p>Error: {error}</p>
+          </div>
           <Button type="button" onClick={() => setPage(page)}>
             Retry
           </Button>
