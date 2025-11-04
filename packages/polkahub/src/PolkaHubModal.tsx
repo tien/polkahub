@@ -1,5 +1,10 @@
-import { ModalContext } from "@polkahub/context";
-import { SelectedAccountButton } from "@polkahub/select-account";
+import { ModalContext, usePlugin } from "@polkahub/context";
+import { Account } from "@polkahub/plugin";
+import {
+  SelectedAccountButton,
+  SelectedAccountPlugin,
+  selectedAccountPluginId,
+} from "@polkahub/select-account";
 import {
   Button,
   Dialog,
@@ -17,6 +22,7 @@ import {
   FC,
   PropsWithChildren,
   ReactNode,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -27,6 +33,7 @@ export const PolkaHubModalTrigger: FC = () => <SelectedAccountButton loading />;
 const [openChange$, setOpen] = createSignal<boolean>();
 export const openSelectAccount = () => setOpen(true);
 const open$ = state(openChange$, false);
+const close = () => setOpen(false);
 
 export const PolkaHubModal: FC<
   PropsWithChildren<{
@@ -36,50 +43,40 @@ export const PolkaHubModal: FC<
   }>
 > = ({ children, buttonProps, className, title = "Connect" }) => {
   const open = useStateObservable(open$);
+  const selectedAccountPlugin = usePlugin<SelectedAccountPlugin>(
+    selectedAccountPluginId
+  );
 
-  const [contentStack, setContentStack] = useState<
-    { title?: string; element: ReactNode }[]
-  >([]);
-
-  const contextValue = useMemo(() => {
-    const ctx = {
-      replaceContent: (element: { title?: string; element: ReactNode }) =>
-        element == null
-          ? ctx.popContent()
-          : setContentStack((stack) => {
-              const newStack = [...stack];
-              const i = Math.max(newStack.length - 1, 0);
-              newStack[i] = element;
-              return newStack;
-            }),
-      pushContent: (element: { title?: string; element: ReactNode }) =>
-        setContentStack((stack) =>
-          element == null ? stack : [...stack, element]
-        ),
-      popContent: () =>
-        setContentStack((stack) => {
-          const newStack = [...stack];
-          newStack.pop();
-          return newStack;
-        }),
-      closeModal: () => setOpen(false),
-    };
-    return ctx;
-  }, []);
-
+  const { contentStack, contextValue } = usePolkaHubModalState(close);
   const activeContent = contentStack.length
     ? contentStack[contentStack.length - 1]
     : null;
 
+  useEffect(() => {
+    if (!selectedAccountPlugin) return;
+
+    let first = true;
+    let prev: Account | null = null;
+    const sub = selectedAccountPlugin.selectedAccount$.subscribe((acc) => {
+      if (first) {
+        first = false;
+        prev = acc;
+        return;
+      }
+      if (prev === acc) return;
+      prev = acc;
+      contextValue.closeModal();
+    });
+
+    return () => sub.unsubscribe();
+  }, [selectedAccountPlugin, contextValue]);
+
   return (
     <Dialog
       open={open}
-      onOpenChange={(open) => {
-        if (!open) {
-          setTimeout(() => setContentStack([]), 500);
-        }
-        setOpen(open);
-      }}
+      onOpenChange={(open) =>
+        open ? setOpen(true) : contextValue.closeModal()
+      }
     >
       <DialogTrigger asChild>
         <SelectedAccountButton className={className} {...buttonProps} />
@@ -118,4 +115,41 @@ export const PolkaHubModal: FC<
       </DialogContent>
     </Dialog>
   );
+};
+
+export const usePolkaHubModalState = (onClose?: () => void) => {
+  const [contentStack, setContentStack] = useState<
+    { title?: string; element: ReactNode }[]
+  >([]);
+
+  const contextValue = useMemo(() => {
+    const ctx: ModalContext = {
+      replaceContent: (element: { title?: string; element: ReactNode }) =>
+        element == null
+          ? ctx.popContent()
+          : setContentStack((stack) => {
+              const newStack = [...stack];
+              const i = Math.max(newStack.length - 1, 0);
+              newStack[i] = element;
+              return newStack;
+            }),
+      pushContent: (element: { title?: string; element: ReactNode }) =>
+        setContentStack((stack) =>
+          element == null ? stack : [...stack, element]
+        ),
+      popContent: () =>
+        setContentStack((stack) => {
+          const newStack = [...stack];
+          newStack.pop();
+          return newStack;
+        }),
+      closeModal: () => {
+        // Remove stack after small duration, otherwise the content might flash as the dialog is transitioning away
+        setTimeout(() => setContentStack([]), 250);
+        onClose?.();
+      },
+    };
+    return ctx;
+  }, [onClose]);
+  return { contentStack, contextValue, setContentStack };
 };

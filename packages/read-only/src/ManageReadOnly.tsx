@@ -55,9 +55,7 @@ const ManageAddresses = () => {
         onSubmit={(evt) => {
           evt.preventDefault();
           if (!isAddrValid) return;
-          const added = readOnlyProvider.addAccount(addressInput);
-
-          setAccount?.(added);
+          readOnlyProvider.addAccount(addressInput);
           setAddressInput("");
         }}
       >
