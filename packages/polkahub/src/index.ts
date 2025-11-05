@@ -23,6 +23,7 @@ export * from "@polkahub/read-only";
 export {
   createSelectedAccountPlugin,
   SelectAccountField,
+  SelectAccount,
   selectedAccountPluginId,
   useSelectedAccount,
   type SelectedAccountPlugin,

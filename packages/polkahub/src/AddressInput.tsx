@@ -4,11 +4,12 @@ import { AddressInput as AddressInputComponent } from "@polkahub/ui-components";
 import { FC, useMemo } from "react";
 
 export const AddressInput: FC<{
-  value: AccountAddress | null;
-  onChange: (value: AccountAddress | null) => void;
+  value?: AccountAddress | null;
+  onChange?: (value: AccountAddress | null) => void;
+  disableClear?: boolean;
   className?: string;
   triggerClassName?: string;
-}> = ({ className, value, onChange, triggerClassName }) => {
+}> = ({ className, value, disableClear, onChange, triggerClassName }) => {
   const availableAccounts = useAvailableAccounts();
 
   const hints = useMemo(() => {
@@ -34,6 +35,7 @@ export const AddressInput: FC<{
       className={className}
       triggerClassName={triggerClassName}
       hinted={Object.values(hints).flat()}
+      disableClear={disableClear}
       renderAddress={(account: Account | string) =>
         typeof account === "string" ? (
           <AddressIdentity addr={account} copyable={false} />

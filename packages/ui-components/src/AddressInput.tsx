@@ -27,6 +27,7 @@ export function AddressInput<T extends AccountInfo = never>({
   className,
   value,
   onChange,
+  disableClear,
   renderAddress = (value) => (
     <AccountDisplay
       className="overflow-hidden"
@@ -37,9 +38,10 @@ export function AddressInput<T extends AccountInfo = never>({
   hinted = [],
   triggerClassName,
 }: {
-  value: string | null;
-  onChange: (value: string | null) => void;
+  value?: string | null;
+  onChange?: (value: string | null) => void;
   className?: string;
+  disableClear?: boolean;
   triggerClassName?: string;
   hinted?: Array<T | string>;
   renderAddress?: (value: T | string) => ReactNode;
@@ -77,7 +79,7 @@ export function AddressInput<T extends AccountInfo = never>({
     ((value && addrEq(query, value)) ||
       cleanHinted.some((acc) => addrEq(acc.address, query)));
 
-  if (value !== null) {
+  if (value != null) {
     cleanHinted.sort((a, b) =>
       addrEq(a.address, value) ? -1 : addrEq(b.address, value) ? 1 : 0
     );
@@ -107,7 +109,7 @@ export function AddressInput<T extends AccountInfo = never>({
               triggerClassName
             )}
           >
-            {value != null ? (
+            {value ? (
               renderAddress(hintedValue ?? value)
             ) : (
               <span className="opacity-80">Select…</span>
@@ -115,10 +117,10 @@ export function AddressInput<T extends AccountInfo = never>({
             <ChevronsUpDown size={14} className="opacity-50 shrink-0" />
           </Button>
         </PopoverTrigger>
-        {value ? (
+        {value && !disableClear ? (
           <button
             className="cursor-pointer absolute top-1/2 right-6 -translate-y-1/2 bg-background group-has-hover:bg-accent dark:group-has-hover:bg-input/50 transition-all rounded-full p-1"
-            onClick={() => onChange(null)}
+            onClick={() => onChange?.(null)}
           >
             <X className="text-muted-foreground" size={16} />
           </button>
@@ -153,7 +155,7 @@ export function AddressInput<T extends AccountInfo = never>({
                     typeof account === "string" ? { address: account } : account
                   }
                   onSelect={() => {
-                    onChange(
+                    onChange?.(
                       typeof account === "string" ? account : account.address
                     );
                     setOpen(false);
@@ -166,7 +168,7 @@ export function AddressInput<T extends AccountInfo = never>({
                 <AccountOption
                   account={{ address: query }}
                   onSelect={() => {
-                    onChange(query);
+                    onChange?.(query);
                     setOpen(false);
                   }}
                 >

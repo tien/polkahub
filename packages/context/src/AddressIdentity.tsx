@@ -7,7 +7,8 @@ export const AddressIdentity: FC<{
   name?: string;
   copyable?: boolean;
   className?: string;
-}> = ({ addr, name, className, copyable = true }) => {
+  maxAddrLength?: number;
+}> = ({ addr, name, className, maxAddrLength = 12, copyable = true }) => {
   let identity = useIdentity(addr);
 
   return (
@@ -20,7 +21,7 @@ export const AddressIdentity: FC<{
       }}
       className={className}
       copyable={copyable}
-      maxAddrLength={12}
+      maxAddrLength={maxAddrLength}
     />
   );
 };

@@ -27,13 +27,15 @@ export function AccountPicker<T extends AccountInfo = never>({
       copyable={false}
     />
   ),
+  disableClear,
   triggerClassName,
 }: {
-  value: T | null;
-  onChange: (value: T | null) => void;
+  value?: T | null;
+  onChange?: (value: T | null) => void;
   groups: { accounts: T[] } | Array<{ name: ReactNode; accounts: T[] }>;
   className?: string;
   triggerClassName?: string;
+  disableClear?: boolean;
   renderAddress?: (value: T) => ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -79,10 +81,10 @@ export function AccountPicker<T extends AccountInfo = never>({
             <ChevronsUpDown size={14} className="opacity-50 shrink-0" />
           </Button>
         </PopoverTrigger>
-        {value ? (
+        {value && !disableClear ? (
           <button
             className="cursor-pointer absolute top-1/2 right-6 -translate-y-1/2 bg-background group-has-hover:bg-accent dark:group-has-hover:bg-input/50 transition-all rounded-full p-1"
-            onClick={() => onChange(null)}
+            onClick={() => onChange?.(null)}
           >
             <X className="text-muted-foreground" size={16} />
           </button>
@@ -106,7 +108,7 @@ export function AccountPicker<T extends AccountInfo = never>({
                     account={account}
                     selected={value === account}
                     onSelect={() => {
-                      onChange(account);
+                      onChange?.(account);
                       setOpen(false);
                     }}
                   >

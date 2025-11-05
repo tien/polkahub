@@ -19,6 +19,27 @@ export const SelectAccountField: FC<{
   className?: string;
 }> = ({ className }) => {
   const availableAccounts = useAvailableAccounts();
+  const [account] = useSelectedAccount();
+
+  if (
+    !account &&
+    !Object.values(availableAccounts).some((group) => group.length > 0)
+  )
+    return null;
+
+  return (
+    <div>
+      <h3 className="font-medium">Select Account</h3>
+      <SelectAccount className={className} />
+    </div>
+  );
+};
+
+export const SelectAccount: FC<{
+  className?: string;
+  disableClear?: boolean;
+}> = ({ className, disableClear }) => {
+  const availableAccounts = useAvailableAccounts();
   const [account, setAccount] = useSelectedAccount();
 
   const groups = Object.entries(availableAccounts)
@@ -28,24 +49,20 @@ export const SelectAccountField: FC<{
       accounts,
     }));
 
-  if (!groups.length && !account) return null;
-
   return (
-    <div>
-      <h3 className="font-medium">Select Account</h3>
-      <AccountPickerComponent
-        value={account}
-        onChange={setAccount}
-        groups={groups}
-        className={cn(className, "max-w-auto")}
-        renderAddress={(account) => (
-          <AddressIdentity
-            addr={account.address}
-            name={account?.name}
-            copyable={false}
-          />
-        )}
-      />
-    </div>
+    <AccountPickerComponent
+      value={account}
+      onChange={setAccount}
+      groups={groups}
+      className={cn(className, "max-w-auto")}
+      disableClear={disableClear}
+      renderAddress={(account) => (
+        <AddressIdentity
+          addr={account.address}
+          name={account?.name}
+          copyable={false}
+        />
+      )}
+    />
   );
 };
