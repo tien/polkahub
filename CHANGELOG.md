@@ -1,5 +1,11 @@
 ## Unreleased
 
+## 0.2.1 2025-11-07
+
+### Fixed
+
+- `selectAccountPlugin.selectedAccount$` is not using the configured SS58 format.
+
 ## 0.2.0 2025-11-07
 
 ### Changed

@@ -6,12 +6,14 @@ import {
   PersistenceProvider,
   Plugin,
   SerializableAccount,
+  ss58Reformat,
 } from "@polkahub/plugin";
 import { state, StateObservable, useStateObservable } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
 import {
   BehaviorSubject,
   catchError,
+  combineLatestWith,
   concat,
   defer,
   distinctUntilChanged,
@@ -20,6 +22,7 @@ import {
   map,
   NEVER,
   of,
+  Subject,
   switchMap,
   take,
   takeUntil,
@@ -70,6 +73,7 @@ export const createSelectedAccountPlugin = (
     take(1)
   );
 
+  const ss58Format$ = new Subject<number>();
   const selectedAccount$ = state(
     concat(
       initialValue$,
@@ -100,6 +104,16 @@ export const createSelectedAccountPlugin = (
           );
         })
       )
+    ).pipe(
+      combineLatestWith(ss58Format$),
+      map(([account, ss58Format]) =>
+        account
+          ? {
+              ...account,
+              address: ss58Reformat(account.address, ss58Format),
+            }
+          : null
+      )
     )
   );
 
@@ -109,6 +123,7 @@ export const createSelectedAccountPlugin = (
     accounts$: of([]),
     receiveContext(context) {
       plugins$.next(context.plugins);
+      ss58Format$.next(context.ss58Format);
     },
     subscription$: selectedAccount$,
     selectedAccount$,
