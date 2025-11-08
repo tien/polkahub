@@ -1,5 +1,13 @@
 ## Unreleased
 
+## 0.2.2 2025-11-08
+
+### Fixed
+
+- `ledger`: Vite not using `buffer` polyfill when in dev mode.
+- `PolkaHubModal`: Prevent auto-closing the dialog when the ss58 format changes.
+- `ui-components`: Account select is not scrollable when using default `@radix-ui/react-dialog` in another dialog.
+
 ## 0.2.1 2025-11-07
 
 ### Fixed

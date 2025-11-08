@@ -2,19 +2,13 @@ import { AccountDisplay, AccountInfo } from "@polkadot-api/react-components";
 import { AccountId } from "@polkadot-api/substrate-bindings";
 import { toHex } from "@polkadot-api/utils";
 import {
-  Button,
-  cn,
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
 } from "@polkahub/ui-components";
-import { ChevronsUpDown, X } from "lucide-react";
 import {
   PropsWithChildren,
   ReactNode,
@@ -22,9 +16,9 @@ import {
   useState,
   type FC,
 } from "react";
+import { AddressInputPopover } from "./AddressInputPopover";
 
 export function AddressInput<T extends AccountInfo = never>({
-  className,
   value,
   onChange,
   disableClear,
@@ -36,7 +30,7 @@ export function AddressInput<T extends AccountInfo = never>({
     />
   ),
   hinted = [],
-  triggerClassName,
+  ...props
 }: {
   value?: string | null;
   onChange?: (value: string | null) => void;
@@ -48,12 +42,6 @@ export function AddressInput<T extends AccountInfo = never>({
 }) {
   const [query, setQuery] = useState("");
   const queryIsValidAddr = isValidAddr(query);
-
-  const [open, _setOpen] = useState(false);
-  const setOpen = (value: boolean) => {
-    _setOpen(value);
-    setQuery("");
-  };
 
   const cleanHinted = useMemo(() => {
     const mapped = hinted.map((v) =>
@@ -85,48 +73,21 @@ export function AddressInput<T extends AccountInfo = never>({
     );
   }
 
-  const onTriggerKeyDown = (evt: React.KeyboardEvent) => {
-    if (evt.key.length === 1) {
-      setOpen(true);
-    }
-  };
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <div
-        className={cn(
-          "flex items-center gap-2 overflow-hidden w-full max-w-96 relative group",
-          className
-        )}
-      >
-        <PopoverTrigger asChild onKeyDown={onTriggerKeyDown}>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className={cn(
-              "grow shrink-0 p-2 has-[>svg]:p-2 h-12 max-w-full flex justify-between overflow-hidden border border-border bg-background",
-              triggerClassName
-            )}
-          >
-            {value ? (
-              renderAddress(hintedValue ?? value)
-            ) : (
-              <span className="opacity-80">Select…</span>
-            )}
-            <ChevronsUpDown size={14} className="opacity-50 shrink-0" />
-          </Button>
-        </PopoverTrigger>
-        {value && !disableClear ? (
-          <button
-            className="cursor-pointer absolute top-1/2 right-6 -translate-y-1/2 bg-background group-has-hover:bg-accent dark:group-has-hover:bg-input/50 transition-all rounded-full p-1"
-            onClick={() => onChange?.(null)}
-          >
-            <X className="text-muted-foreground" size={16} />
-          </button>
-        ) : null}
-      </div>
-      <PopoverContent className="w-96 p-0">
+    <AddressInputPopover
+      hasValue={!!value}
+      renderValue={() =>
+        value ? (
+          renderAddress(hintedValue ?? value)
+        ) : (
+          <span className="opacity-80">Select…</span>
+        )
+      }
+      onClear={disableClear ? undefined : () => onChange?.(null)}
+      onOpenChange={() => setQuery("")}
+      {...props}
+    >
+      {(close) => (
         <Command>
           <CommandInput
             placeholder="Filter or insert…"
@@ -143,7 +104,7 @@ export function AddressInput<T extends AccountInfo = never>({
               {valueIsNew && value ? (
                 <AccountOption
                   account={hintedValue ?? { address: value }}
-                  onSelect={() => setOpen(false)}
+                  onSelect={() => close()}
                 >
                   {renderAddress(hintedValue ?? value)}
                 </AccountOption>
@@ -158,7 +119,7 @@ export function AddressInput<T extends AccountInfo = never>({
                     onChange?.(
                       typeof account === "string" ? account : account.address
                     );
-                    setOpen(false);
+                    close();
                   }}
                 >
                   {renderAddress(account)}
@@ -169,7 +130,7 @@ export function AddressInput<T extends AccountInfo = never>({
                   account={{ address: query }}
                   onSelect={() => {
                     onChange?.(query);
-                    setOpen(false);
+                    close();
                   }}
                 >
                   {renderAddress(query)}
@@ -178,8 +139,8 @@ export function AddressInput<T extends AccountInfo = never>({
             </CommandGroup>
           </CommandList>
         </Command>
-      </PopoverContent>
-    </Popover>
+      )}
+    </AddressInputPopover>
   );
 }
 

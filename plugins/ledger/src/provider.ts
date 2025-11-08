@@ -193,7 +193,7 @@ async function initializeLedgerSigner(
 ) {
   if (!globalThis.Buffer) {
     const bufferModule = await import("buffer");
-    globalThis.Buffer = bufferModule.Buffer;
+    globalThis.Buffer = bufferModule.default?.Buffer ?? bufferModule.Buffer;
   }
 
   if (usingLedger) throw new AlreadyInUseError();

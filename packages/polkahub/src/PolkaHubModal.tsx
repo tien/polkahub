@@ -1,5 +1,5 @@
 import { ModalContext, usePlugin } from "@polkahub/context";
-import { Account } from "@polkahub/plugin";
+import { Account, addrEq } from "@polkahub/plugin";
 import {
   SelectedAccountButton,
   SelectedAccountPlugin,
@@ -63,7 +63,7 @@ export const PolkaHubModal: FC<
         prev = acc;
         return;
       }
-      if (prev === acc) return;
+      if (addrEq(prev?.address, acc?.address)) return;
       prev = acc;
       // Only close when setting an account, not when resetting it.
       if (acc) contextValue.closeModal();

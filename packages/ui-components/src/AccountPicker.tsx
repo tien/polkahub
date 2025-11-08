@@ -1,6 +1,5 @@
 import { AccountDisplay, AccountInfo } from "@polkadot-api/react-components";
 import {
-  Button,
   cn,
   Command,
   CommandEmpty,
@@ -8,17 +7,14 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
 } from "@polkahub/ui-components";
 import { defaultFilter } from "cmdk";
-import { Check, ChevronsUpDown, X } from "lucide-react";
-import { PropsWithChildren, ReactNode, useState, type FC } from "react";
+import { Check } from "lucide-react";
+import { PropsWithChildren, ReactNode, type FC } from "react";
 import { addrEq } from "./AddressInput";
+import { AddressInputPopover } from "./AddressInputPopover";
 
 export function AccountPicker<T extends AccountInfo = never>({
-  className,
   value,
   onChange,
   groups,
@@ -30,7 +26,7 @@ export function AccountPicker<T extends AccountInfo = never>({
     />
   ),
   disableClear,
-  triggerClassName,
+  ...props
 }: {
   value?: T | null;
   onChange?: (value: T | null) => void;
@@ -40,14 +36,6 @@ export function AccountPicker<T extends AccountInfo = never>({
   disableClear?: boolean;
   renderAddress?: (value: T) => ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
-
-  const onTriggerKeyDown = (evt: React.KeyboardEvent) => {
-    if (evt.key.length === 1) {
-      setOpen(true);
-    }
-  };
-
   const cleanGroups = Array.isArray(groups)
     ? groups
     : [
@@ -58,41 +46,19 @@ export function AccountPicker<T extends AccountInfo = never>({
       ];
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <div
-        className={cn(
-          "flex items-center gap-2 overflow-hidden w-full max-w-96 relative group",
-          className
-        )}
-      >
-        <PopoverTrigger asChild onKeyDown={onTriggerKeyDown}>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className={cn(
-              "grow shrink-0 p-2 has-[>svg]:p-2 h-12 max-w-full flex justify-between overflow-hidden border border-border bg-background",
-              triggerClassName
-            )}
-          >
-            {value != null ? (
-              renderAddress(value)
-            ) : (
-              <span className="opacity-80">Select…</span>
-            )}
-            <ChevronsUpDown size={14} className="opacity-50 shrink-0" />
-          </Button>
-        </PopoverTrigger>
-        {value && !disableClear ? (
-          <button
-            className="cursor-pointer absolute top-1/2 right-6 -translate-y-1/2 bg-background group-has-hover:bg-accent dark:group-has-hover:bg-input/50 transition-all rounded-full p-1"
-            onClick={() => onChange?.(null)}
-          >
-            <X className="text-muted-foreground" size={16} />
-          </button>
-        ) : null}
-      </div>
-      <PopoverContent className="w-96 p-0">
+    <AddressInputPopover
+      renderValue={() =>
+        value != null ? (
+          renderAddress(value)
+        ) : (
+          <span className="opacity-80">Select…</span>
+        )
+      }
+      hasValue={!!value}
+      onClear={disableClear ? undefined : () => onChange?.(null)}
+      {...props}
+    >
+      {(close) => (
         <Command
           filter={(value, search, keywords) => {
             const [addr] = keywords ?? [];
@@ -119,7 +85,7 @@ export function AccountPicker<T extends AccountInfo = never>({
                     selectedValue={value}
                     onSelect={() => {
                       onChange?.(account);
-                      setOpen(false);
+                      close();
                     }}
                   >
                     {renderAddress(account)}
@@ -129,8 +95,8 @@ export function AccountPicker<T extends AccountInfo = never>({
             ))}
           </CommandList>
         </Command>
-      </PopoverContent>
-    </Popover>
+      )}
+    </AddressInputPopover>
   );
 }
 

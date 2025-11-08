@@ -27,7 +27,6 @@ const ledgerAccountProvider = createLedgerProvider(
   async () => ({
     decimals: 10,
     tokenSymbol: "DOT",
-    ss58Format: 0,
   })
 );
 const walletConnectProvider = createWalletConnectProvider(
@@ -35,16 +34,11 @@ const walletConnectProvider = createWalletConnectProvider(
   [knownChains.polkadot]
 );
 
-export const polkaHub = createPolkaHub(
-  [
-    selectedAccountPlugin,
-    pjsWalletProvider,
-    polkadotVaultProvider,
-    readOnlyProvider,
-    ledgerAccountProvider,
-    walletConnectProvider,
-  ],
-  {
-    ss58Format: 0,
-  }
-);
+export const polkaHub = createPolkaHub([
+  selectedAccountPlugin,
+  pjsWalletProvider,
+  polkadotVaultProvider,
+  readOnlyProvider,
+  ledgerAccountProvider,
+  walletConnectProvider,
+]);
