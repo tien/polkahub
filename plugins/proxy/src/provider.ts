@@ -11,7 +11,15 @@ import {
 } from "@polkahub/plugin";
 import { DefaultedStateObservable, state } from "@react-rxjs/core";
 import { PolkadotSigner } from "polkadot-api";
-import { BehaviorSubject, combineLatest, map, switchMap } from "rxjs";
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  firstValueFrom,
+  map,
+  switchMap,
+  timeout,
+} from "rxjs";
 
 export interface ProxyInfo {
   real: AccountAddress;
@@ -82,28 +90,41 @@ export const createProxyProvider = (
 
   const getAccount = (
     info: ProxyInfo,
-    parentSigner: PolkadotSigner
+    parentSigner?: PolkadotSigner
   ): ProxyAccount => ({
     provider: proxyProviderId,
     address: info.real,
-    signer: getProxySigner(info, parentSigner),
+    signer: parentSigner ? getProxySigner(info, parentSigner) : undefined,
     name: info.name,
     info,
   });
 
   const proxyInfoToAccount = async (info: ProxyInfo) => {
-    const plugins = plugins$.getValue();
-    const plugin = plugins.find((p) => info.parentSigner?.provider === p.id);
-    if (!plugin) return null;
-    const parentSigner = await plugin.deserialize(info.parentSigner);
-    if (!parentSigner?.signer) return null;
-    return getAccount(info, parentSigner.signer);
+    try {
+      const plugin = await firstValueFrom(
+        plugins$.pipe(
+          map((plugins) =>
+            plugins.find((p) => info.parentSigner?.provider === p.id)
+          ),
+          filter((v) => v != null),
+          timeout({
+            first: 3000,
+          })
+        )
+      );
+
+      if (!plugin) return getAccount(info);
+      const parentSigner = await plugin.deserialize(info.parentSigner);
+      return getAccount(info, parentSigner?.signer);
+    } catch (ex) {
+      console.error(ex);
+      return getAccount(info);
+    }
   };
 
   const accounts$ = state(
     combineLatest([persistedAccounts$, plugins$]).pipe(
-      switchMap(([accounts]) => Promise.all(accounts.map(proxyInfoToAccount))),
-      map((v) => v.filter((v) => v !== null))
+      switchMap(([accounts]) => Promise.all(accounts.map(proxyInfoToAccount)))
     ),
     []
   );

@@ -20,7 +20,15 @@ import {
 } from "@polkahub/plugin";
 import { DefaultedStateObservable, state } from "@react-rxjs/core";
 import { Binary, PolkadotSigner } from "polkadot-api";
-import { BehaviorSubject, combineLatest, switchMap } from "rxjs";
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  firstValueFrom,
+  map,
+  switchMap,
+  timeout,
+} from "rxjs";
 
 export interface MultisigInfo {
   threshold: number;
@@ -82,11 +90,26 @@ export const createMultisigProvider = (
   const multisigInfoToAccount = async (info: MultisigInfo) => {
     if (!info.parentSigner) return getAccount(info, undefined);
 
-    const plugins = plugins$.getValue();
-    const plugin = plugins.find((p) => info.parentSigner?.provider === p.id);
-    if (!plugin) return getAccount(info, undefined);
-    const parentSigner = await plugin.deserialize(info.parentSigner);
-    return getAccount(info, parentSigner?.signer);
+    try {
+      const plugin = await firstValueFrom(
+        plugins$.pipe(
+          map((plugins) =>
+            plugins.find((p) => info.parentSigner?.provider === p.id)
+          ),
+          filter((v) => v != null),
+          timeout({
+            first: 3000,
+          })
+        )
+      );
+      if (!plugin) return getAccount(info, undefined);
+
+      const parentSigner = await plugin.deserialize(info.parentSigner);
+      return getAccount(info, parentSigner?.signer);
+    } catch (ex) {
+      console.error(ex);
+      return getAccount(info, undefined);
+    }
   };
 
   const accounts$ = state(
