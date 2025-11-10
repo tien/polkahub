@@ -5,17 +5,15 @@ import {
   useModalContext,
   usePlugin,
 } from "@polkahub/context";
+import { useSetSelectedAccount } from "@polkahub/select-account";
 import { Button, SourceButton } from "@polkahub/ui-components";
+import { useStateObservable } from "@react-rxjs/core";
 import { Trash2, UserLock } from "lucide-react";
 import { useContext, type FC } from "react";
 import { AddProxy, AddProxyProps } from "./AddProxy";
 import { ProxyProvider, proxyProviderId } from "./provider";
-import { useStateObservable } from "@react-rxjs/core";
-import { useSetSelectedAccount } from "@polkahub/select-account";
 
-export const ManageProxy: FC<{
-  maxAddrLength?: number;
-}> = ({ ...props }) => {
+export const ManageProxy: FC = () => {
   const { pushContent } = useContext(ModalContext)!;
   const proxyProvider = usePlugin<ProxyProvider>(proxyProviderId);
 
@@ -25,7 +23,7 @@ export const ManageProxy: FC<{
       onClick={() =>
         pushContent({
           title: "Proxied accounts",
-          element: <ManageAddresses {...props} />,
+          element: <ManageAddresses />,
         })
       }
       disabled={!proxyProvider}
@@ -37,7 +35,7 @@ export const ManageProxy: FC<{
   );
 };
 
-const ManageAddresses: FC<AddProxyProps> = ({ maxAddrLength, ...props }) => {
+const ManageAddresses: FC<AddProxyProps> = (props) => {
   const { pushContent } = useModalContext();
   const proxyProvider = usePlugin<ProxyProvider>(proxyProviderId)!;
   const proxyAccounts = useStateObservable(proxyProvider.accounts$);
@@ -59,10 +57,7 @@ const ManageAddresses: FC<AddProxyProps> = ({ maxAddrLength, ...props }) => {
                 >
                   <Trash2 />
                 </Button>
-                <AddressIdentity
-                  addr={account.address}
-                  maxAddrLength={maxAddrLength}
-                />
+                <AddressIdentity addr={account.address} />
                 <div className="grow" />
                 <AddressBalance addr={account.address} />
                 {setAccount ? (
@@ -86,7 +81,7 @@ const ManageAddresses: FC<AddProxyProps> = ({ maxAddrLength, ...props }) => {
           onClick={() =>
             pushContent({
               title: "Add Proxy",
-              element: <AddProxy maxAddrLength={maxAddrLength} {...props} />,
+              element: <AddProxy {...props} />,
             })
           }
         >

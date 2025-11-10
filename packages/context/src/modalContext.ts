@@ -14,3 +14,5 @@ export const useModalContext = () => {
   }
   return ctx;
 };
+
+export const MaxAddrLengthContext = createContext<number>(12);

@@ -1,5 +1,6 @@
 import { AccountDisplay } from "@polkadot-api/react-components";
-import { FC } from "react";
+import { FC, useContext } from "react";
+import { MaxAddrLengthContext } from "./modalContext";
 import { useIdentity, useSS58Formatter } from "./polkahubContext";
 
 export const AddressIdentity: FC<{
@@ -7,10 +8,10 @@ export const AddressIdentity: FC<{
   name?: string;
   copyable?: boolean;
   className?: string;
-  maxAddrLength?: number;
-}> = ({ addr, name, className, maxAddrLength = 12, copyable = true }) => {
+}> = ({ addr, name, className, copyable = true }) => {
   const formatSS58 = useSS58Formatter();
   let identity = useIdentity(addr);
+  const maxAddrLength = useContext(MaxAddrLengthContext);
 
   return (
     <AccountDisplay

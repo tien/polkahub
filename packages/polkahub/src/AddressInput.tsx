@@ -9,8 +9,7 @@ export const AddressInput: FC<{
   disableClear?: boolean;
   className?: string;
   triggerClassName?: string;
-  maxAddrLength?: number;
-}> = ({ maxAddrLength, ...props }) => {
+}> = (props) => {
   const availableAccounts = useAvailableAccounts();
 
   const hints = useMemo(() => {
@@ -34,16 +33,11 @@ export const AddressInput: FC<{
       hinted={Object.values(hints).flat()}
       renderAddress={(account: Account | string) =>
         typeof account === "string" ? (
-          <AddressIdentity
-            addr={account}
-            maxAddrLength={maxAddrLength}
-            copyable={false}
-          />
+          <AddressIdentity addr={account} copyable={false} />
         ) : (
           <AddressIdentity
             addr={account.address}
             name={account?.name}
-            maxAddrLength={maxAddrLength}
             copyable={false}
           />
         )

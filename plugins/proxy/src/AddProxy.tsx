@@ -28,14 +28,10 @@ const proxyTypeText: Record<string, string | undefined> = {
 };
 
 export type AddProxyProps = {
-  maxAddrLength?: number;
   blockLength?: number;
 };
 
-export const AddProxy: FC<AddProxyProps> = ({
-  maxAddrLength = 12,
-  blockLength,
-}) => {
+export const AddProxy: FC<AddProxyProps> = ({ blockLength }) => {
   const { popContent } = useModalContext();
   const proxyProvider = usePlugin<ProxyProvider>(proxyProviderId);
   const { polkaHub } = usePolkaHubContext();
@@ -96,7 +92,6 @@ export const AddProxy: FC<AddProxyProps> = ({
             Select your signer (Delegate)
           </h3>
           <ProxySignerPicker
-            maxAddrLength={maxAddrLength}
             value={selectedAccount}
             onChange={setSelectedAccount}
             proxy={proxyAddress}
@@ -191,8 +186,7 @@ const ProxySignerPicker: FC<{
   value: AccountWithProxy | null;
   onChange: (value: AccountWithProxy | null) => void;
   proxy: AccountAddress;
-  maxAddrLength: number;
-}> = ({ value, onChange, maxAddrLength, proxy }) => {
+}> = ({ value, onChange, proxy }) => {
   const proxyProvider = usePlugin<ProxyProvider>(proxyProviderId)!;
   const availableAccounts = useAvailableAccounts();
   const delegatesResult = useAsync(
@@ -267,7 +261,6 @@ const ProxySignerPicker: FC<{
         <AddressIdentity
           addr={account.address}
           name={account?.name}
-          maxAddrLength={maxAddrLength}
           copyable={false}
         />
       )}
